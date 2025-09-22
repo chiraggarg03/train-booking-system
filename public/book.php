@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="post" action="" class="booking-form">
         <label for="seats">Number of Seats:</label>
-        <input type="number" id="seats" name="seats" min="1" max="<?php echo htmlspecialchars($train['total_seats']); ?>" value="1" required class="input-number" />
+        <input type="number" id="seats" name="seats" value="1" required class="input-number" />
         <button type="submit" class="btn submit-btn">Book Now</button>
     </form>
 
