@@ -6,12 +6,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include '../includes/db.php';
 
-// Get filters from URL
 $source = isset($_GET['source']) ? $_GET['source'] : '';
 $destination = isset($_GET['destination']) ? $_GET['destination'] : '';
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
