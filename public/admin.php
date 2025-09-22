@@ -1,23 +1,18 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    echo "Access denied. Only admins allowed.";
     exit;
 }
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Only allow admins
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    echo "Access denied. Only admins allowed.";
-    exit;
-}
-
 include '../includes/db.php';
 
 // Handle add train form submission
+$message = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = "INSERT INTO trains (train_name, source, destination, depart_time, arrival_time, total_seats)
             VALUES (?, ?, ?, ?, ?, ?)";
@@ -32,15 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_POST['total_seats']
     );
     if ($stmt->execute()) {
-        echo "<p style='color:green;'>Train added successfully.</p>";
+        $message = '<p class="success-message">Train added successfully.</p>';
     } else {
-        echo "<p style='color:red;'>Failed to add train: " . $conn->error . "</p>";
+        $message = '<p class="error-message">Failed to add train: ' . htmlspecialchars($conn->error) . '</p>';
     }
 }
 
 // Fetch all trains
 $result = $conn->query("SELECT * FROM trains");
 
+// Fetch all bookings with user and train info
 $bookings_sql = "SELECT bookings.id AS booking_id, users.name AS user_name, users.email AS user_email, 
                  trains.train_name, trains.source, trains.destination, 
                  bookings.seats, bookings.booking_time
@@ -48,74 +44,95 @@ $bookings_sql = "SELECT bookings.id AS booking_id, users.name AS user_name, user
                  JOIN users ON bookings.user_id = users.id
                  JOIN trains ON bookings.train_id = trains.id
                  ORDER BY bookings.booking_time DESC";
-
 $bookings_result = $conn->query($bookings_sql);
-
 ?>
 
 <!DOCTYPE html>
-<html>
-<head><title>Admin Panel: Manage Trains</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Panel: Manage Trains</title>
+    <link rel="stylesheet" href="../assets/style.css" />
+</head>
 <body>
-    <a href="logout.php">Logout</a>
+    <nav>
+        <a href="logout.php" class="btn logout">Logout</a>
+    </nav>
     <h2>Admin Panel: Manage Trains</h2>
 
-    <h3>Add New Train</h3>
-    <form method="post" action="">
-        <input name="train_name" placeholder="Train Name" required>
-        <input name="source" placeholder="Source" required>
-        <input name="destination" placeholder="Destination" required>
-        <input name="depart_time" type="datetime-local" required>
-        <input name="arrival_time" type="datetime-local" required>
-        <input name="total_seats" type="number" min="1" required>
-        <button type="submit">Add Train</button>
-    </form>
+    <?php echo $message; ?>
 
-    <h3>All Trains</h3>
-    <table border="1" cellpadding="8">
-        <tr>
-            <th>Name</th>
-            <th>Source</th>
-            <th>Destination</th>
-            <th>Departure</th>
-            <th>Arrival</th>
-            <th>Seats</th>
-        </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($row['train_name']); ?></td>
-            <td><?php echo htmlspecialchars($row['source']); ?></td>
-            <td><?php echo htmlspecialchars($row['destination']); ?></td>
-            <td><?php echo htmlspecialchars($row['depart_time']); ?></td>
-            <td><?php echo htmlspecialchars($row['arrival_time']); ?></td>
-            <td><?php echo htmlspecialchars($row['total_seats']); ?></td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
-    <h3>All Bookings</h3>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Booking ID</th>
-        <th>User Name</th>
-        <th>User Email</th>
-        <th>Train Name</th>
-        <th>Source</th>
-        <th>Destination</th>
-        <th>Seats</th>
-        <th>Booking Time</th>
-    </tr>
-    <?php while ($row = $bookings_result->fetch_assoc()): ?>
-    <tr>
-        <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
-        <td><?php echo htmlspecialchars($row['user_name']); ?></td>
-        <td><?php echo htmlspecialchars($row['user_email']); ?></td>
-        <td><?php echo htmlspecialchars($row['train_name']); ?></td>
-        <td><?php echo htmlspecialchars($row['source']); ?></td>
-        <td><?php echo htmlspecialchars($row['destination']); ?></td>
-        <td><?php echo htmlspecialchars($row['seats']); ?></td>
-        <td><?php echo htmlspecialchars($row['booking_time']); ?></td>
-    </tr>
-    <?php endwhile; ?>
-</table>
+    <section class="train-form-section">
+        <h3>Add New Train</h3>
+        <form method="post" action="" class="admin-form">
+            <input name="train_name" placeholder="Train Name" required class="input-text" />
+            <input name="source" placeholder="Source" required class="input-text" />
+            <input name="destination" placeholder="Destination" required class="input-text" />
+            <input name="depart_time" type="datetime-local" required class="input-datetime" />
+            <input name="arrival_time" type="datetime-local" required class="input-datetime" />
+            <input name="total_seats" type="number" min="1" required class="input-number" />
+            <button type="submit" class="btn submit-btn">Add Train</button>
+        </form>
+    </section>
+
+    <section class="train-list-section">
+        <h3>All Trains</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Seats</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['train_name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['source']); ?></td>
+                    <td><?php echo htmlspecialchars($row['destination']); ?></td>
+                    <td><?php echo htmlspecialchars($row['depart_time']); ?></td>
+                    <td><?php echo htmlspecialchars($row['arrival_time']); ?></td>
+                    <td><?php echo htmlspecialchars($row['total_seats']); ?></td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="booking-list-section">
+        <h3>All Bookings</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User Name</th>
+                    <th>User Email</th>
+                    <th>Train Name</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Seats</th>
+                    <th>Booking Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $bookings_result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
+                    <td><?php echo htmlspecialchars($row['user_name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['user_email']); ?></td>
+                    <td><?php echo htmlspecialchars($row['train_name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['source']); ?></td>
+                    <td><?php echo htmlspecialchars($row['destination']); ?></td>
+                    <td><?php echo htmlspecialchars($row['seats']); ?></td>
+                    <td><?php echo htmlspecialchars($row['booking_time']); ?></td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </section>
 </body>
 </html>

@@ -1,9 +1,6 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -17,7 +14,6 @@ if ($train_id <= 0) {
     exit;
 }
 
-// Fetch train details
 $stmt = $conn->prepare("SELECT * FROM trains WHERE id = ?");
 $stmt->bind_param('i', $train_id);
 $stmt->execute();
@@ -43,14 +39,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $conn->begin_transaction();
 
         try {
-            // Insert booking record
             $stmt = $conn->prepare("INSERT INTO bookings (user_id, train_id, seats) VALUES (?, ?, ?)");
             $stmt->bind_param("iii", $user_id, $train_id, $seats);
             if (!$stmt->execute()) {
                 throw new Exception("Booking failed: " . $conn->error);
             }
 
-            // Decrement available seats
             $stmt2 = $conn->prepare("UPDATE trains SET total_seats = total_seats - ? WHERE id = ? AND total_seats >= ?");
             $stmt2->bind_param("iii", $seats, $train_id, $seats);
             $stmt2->execute();
@@ -73,29 +67,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8" />
     <title>Book Ticket - <?php echo htmlspecialchars($train['train_name']); ?></title>
+    <link rel="stylesheet" href="../assets/style.css" />
 </head>
 <body>
+    <nav>
+        <a href="dashboard.php" class="btn nav-btn">Dashboard</a>
+        <a href="logout.php" class="btn logout">Logout</a>
+    </nav>
+
     <h2>Book Ticket: <?php echo htmlspecialchars($train['train_name']); ?></h2>
-    <p><strong>From:</strong> <?php echo htmlspecialchars($train['source']); ?></p>
-    <p><strong>To:</strong> <?php echo htmlspecialchars($train['destination']); ?></p>
-    <p><strong>Departure:</strong> <?php echo htmlspecialchars($train['depart_time']); ?></p>
-    <p><strong>Arrival:</strong> <?php echo htmlspecialchars($train['arrival_time']); ?></p>
-    <p><strong>Seats available:</strong> <?php echo htmlspecialchars($train['total_seats']); ?></p>
+
+    <div class="train-info">
+        <p><strong>From:</strong> <?php echo htmlspecialchars($train['source']); ?></p>
+        <p><strong>To:</strong> <?php echo htmlspecialchars($train['destination']); ?></p>
+        <p><strong>Departure:</strong> <?php echo htmlspecialchars($train['depart_time']); ?></p>
+        <p><strong>Arrival:</strong> <?php echo htmlspecialchars($train['arrival_time']); ?></p>
+        <p><strong>Seats available:</strong> <?php echo htmlspecialchars($train['total_seats']); ?></p>
+    </div>
 
     <?php if ($error): ?>
-        <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
+        <p class="error-message"><?php echo htmlspecialchars($error); ?></p>
     <?php endif; ?>
 
-    <form method="post" action="">
+    <form method="post" action="" class="booking-form">
         <label for="seats">Number of Seats:</label>
-        <input type="number" id="seats" name="seats" min="1" max="<?php echo htmlspecialchars($train['total_seats']); ?>" value="1" required>
-        <button type="submit">Book Now</button>
+        <input type="number" id="seats" name="seats" min="1" max="<?php echo htmlspecialchars($train['total_seats']); ?>" value="1" required class="input-number" />
+        <button type="submit" class="btn submit-btn">Book Now</button>
     </form>
 
-    <br>
-    <a href="trains.php">Back to Train Search</a>
+    <p><a href="trains.php" class="btn back-btn">Back to Train Search</a></p>
 </body>
 </html>
