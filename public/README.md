@@ -1,1 +1,0 @@
-# All PHP/HTML files
