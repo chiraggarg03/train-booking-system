@@ -87,12 +87,6 @@ $bookings = $stmt->get_result();
     <h2>Hello, <?php echo htmlspecialchars($username); ?>!</h2>
     <h3>My Bookings</h3>
 
-    <?php if (!empty($message)): ?>
-        <p class="<?php echo strpos($message, 'Error') === false ? 'success-message' : 'error-message'; ?>">
-            <?php echo htmlspecialchars($message); ?>
-        </p>
-    <?php endif; ?>
-
     <?php if ($bookings->num_rows === 0): ?>
         <p>You have no bookings yet.</p>
     <?php else: ?>
