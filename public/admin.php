@@ -41,6 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Fetch all trains
 $result = $conn->query("SELECT * FROM trains");
 
+$bookings_sql = "SELECT bookings.id AS booking_id, users.name AS user_name, users.email AS user_email, 
+                 trains.train_name, trains.source, trains.destination, 
+                 bookings.seats, bookings.booking_time
+                 FROM bookings
+                 JOIN users ON bookings.user_id = users.id
+                 JOIN trains ON bookings.train_id = trains.id
+                 ORDER BY bookings.booking_time DESC";
+
+$bookings_result = $conn->query($bookings_sql);
+
 ?>
 
 <!DOCTYPE html>
@@ -82,5 +92,30 @@ $result = $conn->query("SELECT * FROM trains");
         </tr>
         <?php endwhile; ?>
     </table>
+    <h3>All Bookings</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Booking ID</th>
+        <th>User Name</th>
+        <th>User Email</th>
+        <th>Train Name</th>
+        <th>Source</th>
+        <th>Destination</th>
+        <th>Seats</th>
+        <th>Booking Time</th>
+    </tr>
+    <?php while ($row = $bookings_result->fetch_assoc()): ?>
+    <tr>
+        <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
+        <td><?php echo htmlspecialchars($row['user_name']); ?></td>
+        <td><?php echo htmlspecialchars($row['user_email']); ?></td>
+        <td><?php echo htmlspecialchars($row['train_name']); ?></td>
+        <td><?php echo htmlspecialchars($row['source']); ?></td>
+        <td><?php echo htmlspecialchars($row['destination']); ?></td>
+        <td><?php echo htmlspecialchars($row['seats']); ?></td>
+        <td><?php echo htmlspecialchars($row['booking_time']); ?></td>
+    </tr>
+    <?php endwhile; ?>
+</table>
 </body>
 </html>
