@@ -6,12 +6,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include '../includes/db.php';
 
-// Handle add train form submission
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = "INSERT INTO trains (train_name, source, destination, depart_time, arrival_time, total_seats)
@@ -65,12 +61,12 @@ $bookings_result = $conn->query($bookings_sql);
     <section class="train-form-section">
         <h3>Add New Train</h3>
         <form method="post" action="" class="admin-form">
-            <input name="train_name" placeholder="Train Name" required class="input-text" />
-            <input name="source" placeholder="Source" required class="input-text" />
-            <input name="destination" placeholder="Destination" required class="input-text" />
+            <input name="train_name" type="text" placeholder="Train Name" required class="input-text" />
+            <input name="source" type="text" placeholder="Source" required class="input-text" />
+            <input name="destination" type="text" placeholder="Destination" required class="input-text" />
             <input name="depart_time" type="datetime-local" required class="input-datetime" />
             <input name="arrival_time" type="datetime-local" required class="input-datetime" />
-            <input name="total_seats" type="number" min="1" required class="input-number" />
+            <input name="total_seats" placeholder="Total seats" type="number" min="1" required class="input-number" />
             <button type="submit" class="btn submit-btn">Add Train</button>
         </form>
     </section>
