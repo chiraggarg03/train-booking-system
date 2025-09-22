@@ -52,6 +52,7 @@ $bookings_result = $conn->query($bookings_sql);
 </head>
 <body>
     <nav>
+        <a href="dashboard.php" class="btn nav-btn">Dashboard</a>
         <a href="logout.php" class="btn logout">Logout</a>
     </nav>
     <h2>Admin Panel: Manage Trains</h2>
