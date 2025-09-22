@@ -29,28 +29,48 @@ if (!$train) {
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $seats = intval($_POST['seats']);
-    if ($seats < 1 || $seats > $train['total_seats']) {
+    if ($seats < 1) {
         $error = "Please enter a valid number of seats.";
+    } elseif ($seats > $train['total_seats']) {
+        $error = "Not enough seats available.";
     } else {
-        // Optionally: Check for already booked seats...
         $user_id = $_SESSION['user_id'];
-        $stmt = $conn->prepare(
-            "INSERT INTO bookings (user_id, train_id, seats) VALUES (?, ?, ?)"
-        );
-        $stmt->bind_param("iii", $user_id, $train_id, $seats);
-        if ($stmt->execute()) {
+
+        // Start transaction for data consistency
+        $conn->begin_transaction();
+
+        try {
+            // Insert into bookings table
+            $stmt = $conn->prepare("INSERT INTO bookings (user_id, train_id, seats) VALUES (?, ?, ?)");
+            $stmt->bind_param("iii", $user_id, $train_id, $seats);
+            if (!$stmt->execute()) {
+                throw new Exception("Booking insert failed: " . $conn->error);
+            }
+
+            // Decrement seats from trains table
+            $stmt2 = $conn->prepare("UPDATE trains SET total_seats = total_seats - ? WHERE id = ? AND total_seats >= ?");
+            $stmt2->bind_param("iii", $seats, $train_id, $seats);
+            if (!$stmt2->execute() || $stmt2->affected_rows === 0) {
+                throw new Exception("Not enough available seats.");
+            }
+
+            // Commit transaction
+            $conn->commit();
             $success = "Booking successful!";
-        } else {
-            $error = "Booking failed: " . $conn->error;
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = $e->getMessage();
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
 <html>
 <head><title>Book Ticket</title></head>
 <body>
+    <a href="logout.php">Logout</a>
     <h2>Book Ticket: <?php echo htmlspecialchars($train['train_name']); ?></h2>
     <p>From: <?php echo htmlspecialchars($train['source']); ?></p>
     <p>To: <?php echo htmlspecialchars($train['destination']); ?></p>

@@ -44,6 +44,7 @@ $result = $stmt->get_result();
 </head>
 <body>
     <h2>Find Trains</h2>
+    <a href="logout.php">Logout</a>
     <form method="get" action="trains.php">
         <label>From:</label>
         <input type="text" name="source" value="<?php echo htmlspecialchars($source); ?>">

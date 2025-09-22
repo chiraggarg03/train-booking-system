@@ -41,6 +41,8 @@ $result = $conn->query("SELECT * FROM trains");
 <html>
 <head><title>Admin Panel: Manage Trains</title></head>
 <body>
+    <a href="logout.php">Logout</a>
+
     <h2>Admin Panel: Manage Trains</h2>
 
     <h3>Add New Train</h3>
