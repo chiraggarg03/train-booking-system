@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -42,7 +48,6 @@ $result = $conn->query("SELECT * FROM trains");
 <head><title>Admin Panel: Manage Trains</title></head>
 <body>
     <a href="logout.php">Logout</a>
-
     <h2>Admin Panel: Manage Trains</h2>
 
     <h3>Add New Train</h3>

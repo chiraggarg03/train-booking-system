@@ -3,8 +3,23 @@
   <input type="password" name="password" placeholder="Password" required>
   <button type="submit">Login</button>
 </form>
+<p>Don't have an account? <a href="register.php">Register here</a>.</p>
+
 <?php
 session_start();
+
+if (isset($_SESSION['user_id'])) {
+    // Redirect based on role
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin.php");
+    } else {
+        header("Location: dashboard.php");
+    }
+    exit;
+}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   include '../includes/db.php';
   $email = $_POST['email'];
