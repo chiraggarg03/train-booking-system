@@ -77,6 +77,10 @@ $result = $stmt->get_result();
 </head>
 <body>
     <a href="logout.php">Logout</a>
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <p><a href="admin.php">Go to Admin Panel</a></p>
+    <?php endif; ?>
+
     <h2>My Bookings</h2>
     <a href="trains.php">Book a New Ticket</a>
     <br><br>
