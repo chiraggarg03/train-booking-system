@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="../assets/style.css" />
 </head>
 <body>
+    <h1 class="heading">Railways Train Booking</h1>
     <div class="register-container">
         <h2>Register</h2>
         <form method="post" action="register.php" class="register-form">

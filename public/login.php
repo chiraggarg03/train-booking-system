@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="../assets/style.css" />
 </head>
 <body>
+    <h1 class="heading">Railways Train Booking</h1>
     <div class="login-container">
         <h2>Login</h2>
         <form method="post" action="login.php" class="login-form">
